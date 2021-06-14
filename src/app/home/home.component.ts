@@ -19,7 +19,9 @@ export class HomeComponent implements OnInit {
   constructor() {}
 
   async ngOnInit(): Promise<void> {
-    const model = await tf.loadLayersModel('http://127.0.0.1:8080/model.json');
+    const model = await tf.loadLayersModel(
+      'https://raw.githubusercontent.com/ewice/EA4/main/src/assets/model/model.json'
+    );
     console.log('Model loaded');
 
     this.predictForm.get('input').valueChanges.subscribe(async (data) => {
