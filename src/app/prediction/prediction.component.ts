@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import * as tf from '@tensorflow/tfjs';
 import { FormControl, FormGroup } from '@angular/forms';
 import { faArrowDown } from '@fortawesome/free-solid-svg-icons';
@@ -17,6 +17,7 @@ export class PredictionComponent implements OnInit {
   predictForm = new FormGroup({
     input: new FormControl(''),
   });
+  predictedWords: string[];
 
   constructor() {}
 
@@ -27,6 +28,7 @@ export class PredictionComponent implements OnInit {
     console.log('Model loaded');
 
     this.predictForm.get('input').valueChanges.subscribe(async (text) => {
+      this.predictedWords = [];
       const words = this.cleanInput(text);
       const sequence = this.makeSequences(words);
       if (sequence.length > 0) {
@@ -35,16 +37,14 @@ export class PredictionComponent implements OnInit {
         const predictions = (await predict.dataSync()) as Float32Array;
         const descPredictions = [...predictions];
         descPredictions.sort((a: any, b: any) => b - a);
-        const predictedWords = [];
         for (let i = 0; i < 5; i++) {
           const index = predictions.indexOf(descPredictions[i]);
-          predictedWords.push(
+          this.predictedWords.push(
             Object.keys(this.dictionary).find(
               (key) => this.dictionary[key] === index
             )
           );
         }
-        console.log(predictedWords);
       }
     });
   }
@@ -65,5 +65,10 @@ export class PredictionComponent implements OnInit {
       sequence.push(id);
     }
     return sequence;
+  }
+
+  onAddSelectedWordToInputClick(word: string): void {
+    const currentInput = this.predictForm.get('input').value;
+    this.predictForm.get('input').setValue(currentInput + ' ' + word);
   }
 }

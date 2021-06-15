@@ -8,8 +8,13 @@
   </a>
 </div>
 <div id="ki-training" class="container py-5">
-  <h2 class="text-uppercase text-center pb-3 mb-5">Start typing...</h2>
-  <form [formGroup]="predictForm">
-    <textarea type="text" formControlName="input"></textarea>
+  <h2 class="text-uppercase text-center mb-4">Start typing...</h2>
+  <form [formGroup]="predictForm" class="d-flex justify-content-center mb-3">
+    <textarea class="w-75" type="text" formControlName="input"></textarea>
   </form>
+  <div class="d-flex justify-content-center">
+    <div *ngFor="let word of predictedWords" class="p-2">
+      <button type="button" class="btn btn-primary" (click)="onAddSelectedWordToInputClick(word)">{{ word }}</button>
+    </div>
+  </div>
 </div>
