@@ -1,0 +1,15 @@
+<div class="position-relative mb-5">
+  <div id="header-img">
+    <h1 class="text-uppercase text-white container">Next Word Prediction</h1>
+  </div>
+  <a href="#ki-training"
+     class="btn-scroll position-absolute d-flex justify-content-center align-items-center">
+    <fa-icon [icon]="faArrowDown"></fa-icon>
+  </a>
+</div>
+<div id="ki-training" class="container py-5">
+  <h2 class="text-uppercase text-center pb-3 mb-5">Start typing...</h2>
+  <form [formGroup]="predictForm">
+    <textarea type="text" formControlName="input"></textarea>
+  </form>
+</div>
