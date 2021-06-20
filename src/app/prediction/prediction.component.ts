@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import * as tf from '@tensorflow/tfjs';
 import { FormControl, FormGroup } from '@angular/forms';
 import { faArrowDown } from '@fortawesome/free-solid-svg-icons';
@@ -18,6 +18,7 @@ export class PredictionComponent implements OnInit {
     input: new FormControl(''),
   });
   predictedWords: string[];
+  isModelLoading = true;
 
   constructor() {}
 
@@ -25,14 +26,14 @@ export class PredictionComponent implements OnInit {
     const model = await tf.loadLayersModel(
       'https://raw.githubusercontent.com/ewice/EA4_Model/main/model.json'
     );
-    console.log('Model loaded');
+    this.isModelLoading = false;
 
     this.predictForm.get('input').valueChanges.subscribe(async (text) => {
       this.predictedWords = [];
       const words = this.cleanInput(text);
       const sequence = this.makeSequences(words);
       if (sequence.length > 0) {
-        const tensor = tf.tensor(sequence);
+        const tensor = tf.tensor2d(sequence, [1, 5]);
         const predict = tf.tidy(() => model.predict(tensor) as tf.Tensor);
         const predictions = (await predict.dataSync()) as Float32Array;
         const descPredictions = [...predictions];
@@ -60,11 +61,18 @@ export class PredictionComponent implements OnInit {
 
   makeSequences(words): number[] {
     const sequence = [];
-    const id = this.dictionary[words[words.length - 1]];
-    if (id !== undefined) {
-      sequence.push(id);
+    words.forEach((word) => {
+      const id = this.dictionary[word];
+      if (id !== undefined) {
+        sequence.push(id);
+      } else {
+        sequence.push(null);
+      }
+    });
+    while (sequence.length < 5) {
+      sequence.push(null);
     }
-    return sequence;
+    return sequence.slice(Math.max(sequence.length - 5, 0));
   }
 
   onAddSelectedWordToInputClick(word: string): void {
