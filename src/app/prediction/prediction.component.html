@@ -13,13 +13,17 @@
   </ng-container>
   <ng-container *ngIf="!isModelLoading">
     <h2 class="text-uppercase text-center mb-4">Start typing...</h2>
-    <form [formGroup]="predictForm" class="d-flex justify-content-center mb-3">
-      <textarea class="w-75" type="text" formControlName="input"></textarea>
-    </form>
-    <div class="d-flex justify-content-center">
-      <div *ngFor="let word of predictedWords" class="p-2">
-        <button type="button" class="btn btn-primary" (click)="onAddSelectedWordToInputClick(word)">{{ word }}</button>
+    <form [formGroup]="predictForm" class="d-flex flex-column align-items-center mb-3">
+      <textarea class="w-75" type="text" formControlName="predict"></textarea>
+      <div class="">
+        <div *ngFor="let word of predictedWords" class="p-2">
+          <button type="button" class="btn btn-primary" (click)="onAddSelectedWordToInputClick(word)">{{ word }}</button>
+        </div>
       </div>
-    </div>
+      <div class="mt-3">
+        <label for="number" class="form-label">Number of predictions</label>
+        <input type="number" class="form-control" id="number" formControlName="number">
+      </div>
+    </form>
   </ng-container>
 </div>

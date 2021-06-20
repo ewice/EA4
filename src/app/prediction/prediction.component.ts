@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as tf from '@tensorflow/tfjs';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { faArrowDown } from '@fortawesome/free-solid-svg-icons';
 // @ts-ignore
 import * as data from '../../assets/tokenizer.json';
@@ -15,10 +15,12 @@ export class PredictionComponent implements OnInit {
   dictionary: any = (data as any).default;
   dictionaryLength = Object.keys(this.dictionary).length;
   predictForm = new FormGroup({
-    input: new FormControl(''),
+    predict: new FormControl('', Validators.required),
+    number: new FormControl(5, [Validators.required, Validators.min(0)]),
   });
   predictedWords: string[];
   isModelLoading = true;
+  numberOfPrediction = 5;
 
   constructor() {}
 
@@ -28,7 +30,11 @@ export class PredictionComponent implements OnInit {
     );
     this.isModelLoading = false;
 
-    this.predictForm.get('input').valueChanges.subscribe(async (text) => {
+    this.predictForm.get('number').valueChanges.subscribe((number) => {
+      this.numberOfPrediction = number;
+    });
+
+    this.predictForm.get('predict').valueChanges.subscribe(async (text) => {
       this.predictedWords = [];
       const words = this.cleanInput(text);
       const sequence = this.makeSequences(words);
@@ -38,7 +44,7 @@ export class PredictionComponent implements OnInit {
         const predictions = (await predict.dataSync()) as Float32Array;
         const descPredictions = [...predictions];
         descPredictions.sort((a: any, b: any) => b - a);
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < this.numberOfPrediction; i++) {
           const index = predictions.indexOf(descPredictions[i]);
           this.predictedWords.push(
             Object.keys(this.dictionary).find(
@@ -76,7 +82,7 @@ export class PredictionComponent implements OnInit {
   }
 
   onAddSelectedWordToInputClick(word: string): void {
-    const currentInput = this.predictForm.get('input').value;
-    this.predictForm.get('input').setValue(currentInput + ' ' + word);
+    const currentInput = this.predictForm.get('predict').value;
+    this.predictForm.get('predict').setValue(currentInput + ' ' + word);
   }
 }

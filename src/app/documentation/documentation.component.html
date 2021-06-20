@@ -1,70 +1,161 @@
-<div class="container">
+<div class="container mb-5">
   <h1>Dokumentation</h1>
-  <p>EA 3: Regression mit FFNN</p>
+  <p>EA 4: Language Model mit RNN</p>
 
   <h2>Herangehensweise</h2>
-  <p>Die Umsetzung der dritten Aufgabe erfolgte in mehreren Schritten. Zunächst wurden die Kapitel 1 - 13 des
-    Lernmaterials durchgearbeitet und mit den Tutorials und Dokumentationen Wissen zum TensorflowJS-Framework aufgebaut.
-    Im nächsten Schritt ist das Angular Projekt (v12.0.1) aufgesetzt und die Frameworks und Bibliotheken integriert
-    worden. Für das Stylen und Erstellen des Layouts kamen Bootstrap und SASS/CSS zum Einsatz. Beim Aufbau wurde auf
-    eine dynamische Entgegennahme verschiedener Parameter geachtet, damit die verschiedenen Einstellungsmöglichkeiten am
-    Model getestet und Erkenntnisse gesammelt werden können. Um die Genauigkeit des Trainings schnell nachvollziehen zu
-    können, wurde primär auf die Visualisierung mithilfe eines Scatterplot-Diagramms zurückgegriffen. Hier können die
-    Originaldaten und die vorgesagten Daten eingesehen werden. Für die Vorhersage eines einzelnen Wertes gibt es ein
-    zusätzliches Eingabefeld. Der grundlegende Datensatz umfasste 801 Daten (-x = [-400, 400]) und das Model wurde nach
-    der Umwandlung in Tensoren damit trainiert. Das Training wurde durch weitere Faktoren wie "Anzahl der hidden
-    Layers", "Anzahl der Neuronen", "Aktivierungsfunktion", "Lernrate", "Optimizer" und "Anzahl der Epochen"
-    beeinflusst. Danach ging es ans Ausprobieren...</p>
-
-  <h2>Bias und Varianz</h2>
-  <p>Sind die Datenqualität und/oder das Model zu schlecht, werden die Ergebnisse des Trainings/Validierungsset genauso
-    sein. Ein geringes Bias sorgt für Underfitting.<br> Ist hingegen das Model zu komplex und man erhält gute Ergebnisse für die Trainingsdaten, aber nicht für die
-    Testdaten, spricht man von Varianz oder Overfitting.</p>
-
-  <h2>Erkenntnisse</h2>
-  <p>Das beste Ergebnis (Low Bias/Low Variance) konnte ich mit den folgenden Einstellungen erreichen:</p>
+  <p>Zunächst wurde nach vergleichbaren Projekten gesucht und diese analysiert. Dabei stießen zwei Projekte auf
+    besondere Beachtung:</p>
   <ul>
-    <li>Anzahl der hidden Layers: 10</li>
-    <li>Anzahl der Neuronen: 50</li>
-    <li>Aktivierungsfunktion: relu6</li>
-    <li>Anzahl der Epochen: 50</li>
+    <li>
+      <a href="https://towardsdatascience.com/next-word-prediction-with-nlp-and-deep-learning-48b9fe0a17bf"
+         target="_blank">https://towardsdatascience.com/next-word-prediction-with-nlp-and-deep-learning-48b9fe0a17bf</a>
+    </li>
+    <li>
+      <a href="https://github.com/xunweiyee/next-word-predictor">https://github.com/xunweiyee/next-word-predictor</a>
+    </li>
   </ul>
   <p>
-    Das Testen begann mit dem Einstellen von 10 Epochen und schon dort lag der MSE unter 0.1 und wurde am Anfang
-    weiterhin verwendet. Danach wurde die Anzahl der Trainingsdaten ausprobiert und mit einer Menge von 3001 Daten
-    begonnen, welches bereits für gute Vorhersagen gesorgt hat. Weitere Anpassungen haben wurden an den hidden Layern
-    mit 50 Units und der Activiation "relu" durchgeführt. Bei einer Verringerung der Testdaten auf 301, wurden die
-    Ergebnisse für die unbekannten Daten schlechter. Eine Erhöhung der Trainingsdaten auf 801 führte dazu, dass sich die
-    Vorhersagen annähern. Als Nächstes wurden weitere Hidden Layern hinzugefügt. Der Loss und der MSE näherten sich
-    dabei 0. Eine Steigerung der Batchsize führte zu keiner Verbesserung.
-    Weitere Anpassungen bzw. höhere Werte haben hier zu keinen besseren Ergebnissen geführt. Sobald ein gewisser
-    Schwellenwert erreicht wurde, konnten keine signifikant besseren Werte erzielt werden, welche die zusätzliche
-    Rechenleistung rechtfertigen würden. Waren die Parameter und die Daten zu gering, wurde ein High Bias (Hohe
-    Entfernung der vorhergesagten Werte zur den Trainingsdaten) und somit ein Under-Fitting festgestellt.</p>
+    Sie ermöglichten einen schnellen und leichten Einstieg in die Herausforderung und ein grundlegendes Verständnis für
+    die Herangehensweise zu entwickeln.
+    Zu Beginn wurde auf die <a
+    href="https://www.bundestag.de/resource/blob/847448/9afbad777456fb67d6b5ae1d6a5df558/19234-data.xml">Plenarprotokolle
+    des Deutschen Bundestags</a> zurückgegriffen, etwas bereingt und auf dieser Basis der Tokenzier erstellt.
+  </p>
+  <pre>
+    <code>
+      tokenizer = Tokenizer()
+      tokenizer.fit_on_texts(lines)
+      tokenizer.texts_to_sequences(lines);
+      test = tokenizer.word_index
+    </code>
+  </pre>
+  <p>Mit den Trainingsdaten (~98% der bereinigten Daten) wurde anschließend das Model auf der Grundlage von
+    <a href="https://towardsdatascience.com/next-word-prediction-with-nlp-and-deep-learning-48b9fe0a17bf"
+       target="_blank">https://towardsdatascience.com/next-word-prediction-with-nlp-and-deep-learning-48b9fe0a17bf</a>
+    trainiert. Die Beschränkung lag hierbei noch bei der Anzahl des Inputs (max. 1 Wort) und der Loss bei ~2,5
+    (Epochen: 30, BatchSize: 120).
+  </p>
+  <pre>
+    <code>
+      model = Sequential()
+      model.add(Embedding(vocab_size, 10, input_length=1))
+      model.add(LSTM(1000, return_sequences=True))
+      model.add(LSTM(1000))
+      model.add(Dense(1000, activation="relu"))
+      model.add(Dense(vocab_size, activation="softmax"))
+    </code>
+    <code>
+      model = Sequential()
+      model.add(Embedding(vocab_size, 10, input_length=1))
+      model.add(LSTM(2000, return_sequences=True))
+      model.add(LSTM(2000))
+      model.add(Dense(1000, activation="relu"))
+      model.add(Dense(vocab_size, activation="softmax"))
+    </code>
+    <code>
+      model = Sequential()
+      model.add(Embedding(vocab_size, 20, input_length=1))
+      model.add(LSTM(1000, return_sequences=True))
+      model.add(LSTM(1000))
+      model.add(Dense(1000, activation="relu"))
+      model.add(Dense(vocab_size, activation="softmax"))
+    </code>
+  </pre>
+  <p>Nach einigen Experimenten durch Veränderungen der Layers und Epochen, habe ich mich schlussendlich für die
+    Herangehensweise von
+    <a href="https://github.com/xunweiyee/next-word-predictor">https://github.com/xunweiyee/next-word-predictor</a>
+    entschieden (Loss ~1.3, Epochen: 30: BatchSoze: 120). Um mehr als nur für genau ein Wort eine Vorhersage zu
+    bekommen, wurde die Input Length auf 5 angehoben. Zu große Werte bei der Input Length legten hier
+    (verständlicherweise) meinen PC lahm.
+  </p>
+  <pre>
+    <code>
+      model = Sequential()
+      model.add(Embedding(vocab_size, 50, input_length=5))
+      model.add(LSTM(100, return_sequences=True))
+      model.add(LSTM(100))
+      model.add(Dense(100, activation='relu'))
+      model.add(Dense(vocab_size, activation='softmax'))
+    </code>
+  </pre>
 
-  <h2>Technische Dokumentation: Quellen und Bibliotheken</h2>
+  <h2>Vorhersage</h2>
+  <p>Aus den restlichen bereinigten Daten wurden drei Sätze genommen, um den Erfolg des Trainings zu bestimmmen. Hier
+    wurde mit k gleich 5, 10, 20 und 100 vorhergesagten Wörtern gearbeitet.</p>
+
+  <p>Versammlung vom Januar zur Stärkung Europas auf dem Weg aus der COVID-Pandemie</p>
   <ul>
-    <li>Tensorflow.js Tutorials / Dokumentation: Hier wurde das hinterlegt Tutorial durchgearbeitet und die
-      Dokumentation für die Verbesserung und/oder Überarbeitung des Tutorial-Ergebnisses genutzt.
+    <li><strong>k=5:</strong> 0 Treffer</li>
+    <li><strong>k=10:</strong> 0 Treffer</li>
+    <li><strong>k=20:</strong> 0 Treffer</li>
+    <li><strong>k=100:</strong> 2 Treffer ("vom", "zur")</li>
+  </ul>
+
+  <p>Gesetz zur Anpassung des Urheberrechts an die Erfordernisse des digitalen Binnenmarktes</p>
+  <ul>
+    <li><strong>k=5:</strong> 0 Treffer</li>
+    <li><strong>k=10:</strong> 0 Treffer</li>
+    <li><strong>k=20:</strong> 0 Treffer</li>
+    <li><strong>k=100:</strong> 1 Treffer ("zur")</li>
+  </ul>
+
+  <p>Außerplanmäßige Ausgaben und Verpflichtungsermächtigungen im dritten Vierteljahr des Haushaltsjahres</p>
+  <ul>
+    <li><strong>k=5:</strong> 0 Treffer</li>
+    <li><strong>k=10:</strong> 0 Treffer</li>
+    <li><strong>k=20:</strong> 0 Treffer</li>
+    <li><strong>k=100:</strong> 1 Treffer ("und")</li>
+  </ul>
+  <p>Es ist klar zu erkennen, dass keine ordentlichen Vorhersagen getroffen werden konnten. Dies liegt wahrscheinlich an
+    der Quantität und Qualität der Daten aus den Plenarprotokollen, denn diese sind mit vielen Namen von Politikern und
+    Parteien versehen. Darüberhinaus enthalten sie Paragraphen und Drucksachen. Bessere Qualität könnte möglicherweise
+    mit der Verwendung von Buchtexten erzielt werden.</p>
+
+  <h2>Technische Dokumentation</h2>
+  <ul>
+    <li>Tensorflow: Ist ein Framework zur datenstromorientierten Programmierung und wird häufig im Bereich des
+      maschinellen Lernens eingesetzt. Mit Tensorflow wurde in Python der Tokenizer erstellt und das Model trainiert.
     </li>
-    <li>Angular v12.0.1 (Frontend Framework): Bietet als JavaScript-Framework eine bessere Verarbeitung der Daten und
+    <li>Tensorflow.js: Die Libary bringt das maschinelle Lernen in den Browser. Es wurde verwendet, um das in Python
+      trainierte Model im Browser aufzurufen und Vorhersagen für die Eingaben zu treffen.
+    </li>
+    <li>Angular v10.2.4 (Frontend Framework): Bietet als JavaScript-Framework eine bessere Verarbeitung der Daten und
       einfachere Manupulation des DOMs.
     </li>
     <li>Bootstrap v5.0.1 (Frontend Framework): Wird zum Stylen und Erstellen des Layouts der Anwendung genutzt. Die
       hinterlegten CSS-Klassen ermöglichen einen grundlegenden Aufbau und sind durch Überschreibung/Ergänzung schnell
       anpassbar.
     </li>
-    <li>Ng2-Chart/Chart.js (Datenvisualisierung): Wurde zum Ersetzen des Tensorflow Visors benutzt, weil es bessere
-      Anpassungsmöglichkeiten bietet.
-    </li>
   </ul>
 
   <h2>Fachliche Dokumentation</h2>
-  <p>Die grundlegende Logik wurde aus dem
-    <a target="_blank" href="https://www.tensorflow.org/js/tutorials/training/linear_regression">
-      "Making predictions from 2d data"
-    </a>
-    Tutorial übernommen und nur kleinere Anpassungen vorgenommen. Es können nun dynamisch Parameter angepasst werden
-    und es wurde von Visor auf Chart.js gewechselt. Weitere Anpassungen erfolgt zur besseren Verarbeitung und Austausch
-    (zwischen Komponenten) der Daten in Angular.</p>
+  <ul>
+    <li>Zu Beginn wurde diese Artikel gelesen und das Tutorial durchgearbeitet:
+      <a href="https://towardsdatascience.com/next-word-prediction-with-nlp-and-deep-learning-48b9fe0a17bf"
+         target="_blank">https://towardsdatascience.com/next-word-prediction-with-nlp-and-deep-learning-48b9fe0a17bf</a>
+    </li>
+    <li>
+      Anschließend wurde ein
+      <a href="https://www.bundestag.de/resource/blob/847448/9afbad777456fb67d6b5ae1d6a5df558/19234-data.xml">
+        Plenarprotokoll des Deutschen Bundestags
+      </a>
+      in eine .txt umgewandelt und die Daten bereinigt und zum Testen des Models aufgeteilt.
+    </li>
+    <li>Dann wurde aus den Trainingsdaten ein Tokenizier ("Wörterbuch") im JSON-Format erstellt, um die Vorhersagen von
+      einer Zahl zurück zu Text in Angular umzuwandeln.
+    </li>
+    <li>Mit den vorhandenen Trainingsdaten wurde das entwicklete Modell trainiert und anschließend in ein TFJS-Modell
+      konvertiert. Diese ist auf Github zum Abruf durchs Frontend hochgeladen worden.
+    </li>
+    <li>
+      Mit dem Modell und Tokenizier im Frontend konnten die Vorhersagen getroffen werden. Hierfür wurde die Texteingabe
+      in ein Array umgewandelt und die passenden Zahlen (aus dem Tokenizier/Wörterbuch) den Wörtern zugeordnet worden.
+      Diese sind anschließend mittels eines Arrays in einen 2D-Tensor umgewandelt und zum Predicten ins Modell gegeben
+      worden.
+    </li>
+    <li>Die Rückgabe der Vorhersagen aus dem Modell durchlief den umgekehrten Weg. Zahlen wurden zurück in Worte
+      umgewandelt und anschlißend im Frontend für den Nutzer sichtbar gemacht.
+    </li>
+    <li>Auf der Grundlage wurden dann das Modell getestet.</li>
+  </ul>
 </div>
